@@ -8,63 +8,41 @@ import java.net.URL;
 public class Wget implements Runnable {
     private final String url;
     private final int speed;
-    private final String name;
 
-    public Wget(String url, int speed, String name) {
+    public Wget(String url, int speed) {
         this.url = url;
         this.speed = speed;
-        this.name = name;
     }
 
     @Override
     public void run() {
         try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(name)) {
-            byte[] dataBuffer = new byte[1024];
+             FileOutputStream fileOutputStream = new FileOutputStream("downloadedFile")) {
+            byte[] dataBuffer = new byte[speed];
             int bytesRead = 0;
-            long bytesWritten = 0, startTime = 0, deltaTime = 0;
+            long startTime, endTime, actualTime, lag = 0;
             while (bytesRead != -1) {
-                if (bytesWritten == 0) {
-                    startTime = System.currentTimeMillis();
+                startTime = System.currentTimeMillis();
+                bytesRead = in.read(dataBuffer, 0, speed);
+                endTime = System.currentTimeMillis();
+                fileOutputStream.write(dataBuffer, 0, bytesRead);
+                actualTime = endTime - startTime;
+                if (actualTime < 1000) {
+                    lag = 1000 - actualTime;
+                    Thread.sleep(lag);
                 }
-                bytesRead = in.read(dataBuffer, 0, 1024);
-                fileOutputStream.write(dataBuffer);
-                bytesWritten += bytesRead;
-                if (bytesWritten >= speed) {
-                    deltaTime = System.currentTimeMillis() - startTime;
-                    bytesWritten = 0;
-                }
-                if (deltaTime != 0 && deltaTime < 1000) {
-                    Thread.sleep(1000 - deltaTime);
-                    deltaTime = 0;
-                }
+                System.out.printf("bytesRead = %s; actualTime = %s; lag = %s%n", bytesRead, actualTime, lag);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public static void validate(int argsNum) {
-        if (argsNum != 3) {
-            throw new IllegalArgumentException("""
-                    The number of arguments is incorrect.
-                    First argument – the URL (http://...);
-                    second – the expected speed (in bytes);
-                    third – the file name.""");
         }
     }
 
     public static void main(String[] args) throws InterruptedException {
-        validate(args.length);
         String url = args[0];
         int speed = Integer.parseInt(args[1]);
-        String name = args[2];
-        Thread wget = new Thread(new Wget(url, speed, name));
-        long start = System.currentTimeMillis();
+        Thread wget = new Thread(new Wget(url, speed));
         wget.start();
         wget.join();
-        System.out.printf("Total time of the execution = %s ms", System.currentTimeMillis() - start);
     }
 }
