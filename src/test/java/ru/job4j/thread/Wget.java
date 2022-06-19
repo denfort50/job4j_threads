@@ -33,10 +33,9 @@ public class Wget implements Runnable {
                 if (bytesWritten >= speed) {
                     deltaTime = System.currentTimeMillis() - startTime;
                     bytesWritten = 0;
-                }
-                if (deltaTime != 0 && deltaTime < 1000) {
-                    Thread.sleep(1000 - deltaTime);
-                    deltaTime = 0;
+                    if (deltaTime < 1000) {
+                        Thread.sleep(1000 - deltaTime);
+                    }
                 }
             }
         } catch (IOException e) {
