@@ -169,4 +169,26 @@ public class UserStorageTest {
         second.join();
         assertThat(userStorage.delete(new User(3, 5000)), is(false));
     }
+
+    @Test
+    public void whenCreate4UsersAndCheckThatUserIsNew() throws InterruptedException {
+        UserStorage userStorage = new UserStorage();
+        Thread first = new Thread(
+                () -> {
+                    userStorage.add(new User(1, 1000));
+                    userStorage.add(new User(2, 2000));
+                }
+        );
+        Thread second = new Thread(
+                () -> {
+                    userStorage.add(new User(3, 3000));
+                }
+        );
+        first.start();
+        second.start();
+        first.join();
+        second.join();
+        assertThat(userStorage.add(new User(4, 4000)), is(true));
+    }
+
 }
