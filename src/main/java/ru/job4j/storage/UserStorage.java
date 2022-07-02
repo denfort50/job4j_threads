@@ -12,12 +12,13 @@ public class UserStorage {
     @GuardedBy("this")
     private final Map<Integer, User> users = new ConcurrentHashMap<>();
 
-    public synchronized User add(User user) {
-        return users.putIfAbsent(user.getId(), user);
+    public synchronized boolean add(User user) {
+        users.putIfAbsent(user.getId(), user);
+        return users.get(user.getId()) != null;
     }
 
-    public synchronized User update(User user) {
-        return users.replace(user.getId(), user);
+    public synchronized boolean update(User user) {
+        return users.replace(user.getId(), users.getOrDefault(user.getId(), new User(0, 0)), user);
     }
 
     public synchronized boolean delete(User user) {
@@ -25,34 +26,14 @@ public class UserStorage {
     }
 
     public synchronized boolean transfer(int fromId, int toId, int amount) {
-        boolean idIsValid = validateId(fromId) && validateId(toId);
-        boolean amountIsValid = validateAmount(fromId, amount);
-        if (idIsValid && amountIsValid) {
-            User userFrom = users.get(fromId);
-            User userTo = users.get(toId);
+        User userFrom = users.get(fromId);
+        User userTo = users.get(toId);
+        boolean usersAndAmountAreValid = userFrom != null && userFrom.getAmount() - amount >= 0 && userTo != null;
+        if (usersAndAmountAreValid) {
             userFrom.setAmount(userFrom.getAmount() - amount);
             userTo.setAmount(userTo.getAmount() + amount);
         }
-        return idIsValid && amountIsValid;
-    }
-
-    /**
-     * Метод проверяет, существует ли в коллекции пользователь с указанным id
-     * @param id id пользователя
-     * @return true, если пользователь с таким id существует, иначе false
-     */
-    public synchronized boolean validateId(int id) {
-        return users.get(id) != null;
-    }
-
-    /**
-     * Метод проверяет, что у пользователя-отправителя есть сумма, которую нужно перевести
-     * @param id id пользователя
-     * @param amount сумма денег
-     * @return true, если пользователь располагает указанной суммой
-     */
-    public synchronized boolean validateAmount(int id, int amount) {
-        return users.get(id).getAmount() >= amount;
+        return usersAndAmountAreValid;
     }
 
     public synchronized User findById(int id) {
