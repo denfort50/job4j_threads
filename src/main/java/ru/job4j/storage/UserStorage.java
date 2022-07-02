@@ -13,12 +13,11 @@ public class UserStorage {
     private final Map<Integer, User> users = new ConcurrentHashMap<>();
 
     public synchronized boolean add(User user) {
-        users.putIfAbsent(user.getId(), user);
-        return users.get(user.getId()) != null;
+        return users.putIfAbsent(user.getId(), user) != null;
     }
 
     public synchronized boolean update(User user) {
-        return users.replace(user.getId(), users.getOrDefault(user.getId(), new User(0, 0)), user);
+        return users.replace(user.getId(), user) != null;
     }
 
     public synchronized boolean delete(User user) {
