@@ -21,8 +21,8 @@ public class SimpleBlockingQueue<T> {
         while (queue.size() == limit) {
             wait();
         }
-        notifyAll();
         queue.offer(value);
+        notifyAll();
     }
 
     public synchronized T poll() throws InterruptedException {
