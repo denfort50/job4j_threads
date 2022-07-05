@@ -11,7 +11,7 @@ public class SimpleBlockingQueue<T> {
 
     @GuardedBy("this")
     private final Queue<T> queue = new LinkedList<>();
-    public int limit;
+    private final int limit;
 
     public SimpleBlockingQueue(int limit) {
         this.limit = limit;
@@ -19,27 +19,18 @@ public class SimpleBlockingQueue<T> {
 
     public synchronized void offer(T value) throws InterruptedException {
         while (queue.size() == limit) {
-            System.out.println("SimpleBlockingQueue is full, waiting until space is free.");
             wait();
         }
-        if (queue.size() == 0) {
-            System.out.println("SimpleBlockingQueue is empty, notify.");
-            notifyAll();
-        }
+        notifyAll();
         queue.offer(value);
-        System.out.println("SimpleBlockingQueue put ok: " + value);
     }
 
     public synchronized T poll() throws InterruptedException {
         while (queue.size() == 0) {
-            System.out.println("SimpleBlockingQueue is empty, waiting until something is put.");
             wait();
         }
-        if (queue.size() == limit) {
-            notifyAll();
-        }
         T result = queue.poll();
-        System.out.println("SimpleBlockingQueue take ok: " + result);
+        notifyAll();
         return result;
     }
 }
