@@ -34,7 +34,7 @@ public class IndexSearch<T> extends RecursiveTask<Integer> {
 
     public int lightSearch() {
         int result = -1;
-        for (int i = from; i < to; i++) {
+        for (int i = from; i <= to; i++) {
             if (value.equals(array[i])) {
                 result = i;
                 break;
@@ -43,7 +43,7 @@ public class IndexSearch<T> extends RecursiveTask<Integer> {
         return result;
     }
 
-    public int search(T[] array, T value) {
+    public static <T> int search(T[] array, T value) {
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         IndexSearch<T> indexSearch = new IndexSearch<>(array, 0, array.length - 1, value);
         return forkJoinPool.invoke(indexSearch);
