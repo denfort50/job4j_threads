@@ -76,7 +76,7 @@ public class RolColSum {
         return sums;
     }
 
-    public static CompletableFuture<Sums> getTask(int[][] matrix, int index) {
+    private static CompletableFuture<Sums> getTask(int[][] matrix, int index) {
         return CompletableFuture.supplyAsync(() -> {
             Sums sums = new Sums();
             int rowSum = 0;
