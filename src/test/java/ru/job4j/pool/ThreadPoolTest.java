@@ -11,21 +11,23 @@ public class ThreadPoolTest {
     public void whenStartThreadPoolWith30Tasks() throws InterruptedException {
         ThreadPool threadPool = new ThreadPool(10);
         int[] index = {0};
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 30; i++) {
             threadPool.work(() -> index[0]++);
+            Thread.sleep(1);
         }
         threadPool.shutdown();
-        assertThat(index[0], is(20));
+        assertThat(index[0], is(30));
     }
 
     @Test
-    public void whenStartThreadPoolWith100Tasks() throws InterruptedException {
+    public void whenStartThreadPoolWith1000Tasks() throws InterruptedException {
         ThreadPool threadPool = new ThreadPool(20);
         int[] index = {0};
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             threadPool.work(() -> index[0]++);
+            Thread.sleep(1);
         }
         threadPool.shutdown();
-        assertThat(index[0], is(100));
+        assertThat(index[0], is(1000));
     }
 }
